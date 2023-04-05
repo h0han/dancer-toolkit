@@ -8,7 +8,8 @@ const rangeEnd = document.getElementById('range-end');
 const jointInput = document.getElementById('joint-input');
 const completeBtn = document.getElementById('complete-btn');
 const videoBarContainer = document.getElementById('video-bar-container');
-const videoBar = document.getElementById('video-bar');
+const videoBar = document.querySelector('.video-bar');
+const videoBarSelection = document.getElementById('videoBarSelection');
 const videoBarSelectionStart = document.getElementById('video-bar-selection-start');
 const videoBarSelectionEnd = document.getElementById('video-bar-selection-end');
 const addBtn = document.getElementById('add-btn');
@@ -119,8 +120,13 @@ function onMouseMove(event) {
             activeSelectionHandle.style.left = videoBarSelectionEnd.style.left;
         } else {
             activeSelectionHandle.style.left = timePercentage + '%';
-            activeSelectionHandle.setAttribute('data-time', timeInSeconds.toFixed(2));
+            activeSelectionHandle.dataset.time = timeInSeconds.toFixed(2);
         }
+
+        const selectionStartPercentage = parseFloat(videoBarSelectionStart.style.left);
+        const selectionEndPercentage = parseFloat(videoBarSelectionEnd.style.left);
+        videoBarSelection.style.left = selectionStartPercentage + '%';
+        videoBarSelection.style.width = (selectionEndPercentage - selectionStartPercentage) + '%';
     } else if (activeSelectionHandle === videoBarSelectionEnd) {
         if (timePercentage > 100) {
             activeSelectionHandle.style.left = '100%';
@@ -128,15 +134,21 @@ function onMouseMove(event) {
             activeSelectionHandle.style.left = videoBarSelectionStart.style.left;
         } else {
             activeSelectionHandle.style.left = timePercentage + '%';
-            activeSelectionHandle.setAttribute('data-time', timeInSeconds.toFixed(2));
+            activeSelectionHandle.dataset.time = timeInSeconds.toFixed(2);
         }
-    }
 
-    const selectionStartPercentage = parseFloat(videoBarSelectionStart.style.left);
-    const selectionEndPercentage = parseFloat(videoBarSelectionEnd.style.left);
-    videoBarSelection.style.left = selectionStartPercentage + '%';
-    videoBarSelection.style.width = (selectionEndPercentage - selectionStartPercentage) + '%';
+        const selectionStartPercentage = parseFloat(videoBarSelectionStart.style.left);
+        const selectionEndPercentage = parseFloat(videoBarSelectionEnd.style.left);
+        videoBarSelection.style.left = selectionStartPercentage + '%';
+        videoBarSelection.style.width = (selectionEndPercentage - selectionStartPercentage) + '%';
+    }
 }
+
+
+videoBarSelectionStart.style.position = 'absolute';
+videoBarSelectionEnd.style.position = 'absolute';
+
+  
 
 function initializeVideoBar() {
     const videoDuration = videoPreview.duration;
