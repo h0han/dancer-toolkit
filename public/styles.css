@@ -18,7 +18,8 @@ h1 {
     background-color: #2196F3;
 }
 
-#video-bar-selection {
+#video-bar-selection-start,
+#video-bar-selection-end {
     position: absolute;
     width: 10px;
     height: 100%;

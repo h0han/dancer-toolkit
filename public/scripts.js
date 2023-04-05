@@ -9,7 +9,12 @@ const jointInput = document.getElementById('joint-input');
 const completeBtn = document.getElementById('complete-btn');
 const videoBarContainer = document.getElementById('video-bar-container');
 const videoBar = document.getElementById('video-bar');
-const videoBarSelection = document.getElementById('video-bar-selection');
+const videoBarSelectionStart = document.getElementById('video-bar-selection-start');
+const videoBarSelectionEnd = document.getElementById('video-bar-selection-end');
+const addBtn = document.getElementById('add-btn');
+const selectionsContainer = document.getElementById('selections-container');
+
+let activeSelectionHandle = null;
 
 uploadBtn.addEventListener('click', () => {
     if (videoInput.files.length === 0) {
@@ -36,15 +41,54 @@ uploadBtn.addEventListener('click', () => {
     });
 });
 
-completeBtn.addEventListener('click', () => {
-    const currentTime = videoPreview.currentTime;
+videoBarSelectionStart.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    activeSelectionHandle = videoBarSelectionStart;
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+});
+
+videoBarSelectionEnd.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    activeSelectionHandle = videoBarSelectionEnd;
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+});
+
+addBtn.addEventListener('click', () => {
+    const startTime = parseFloat(videoBarSelectionStart.getAttribute('data-time'));
+    const endTime = parseFloat(videoBarSelectionEnd.getAttribute('data-time'));
     const importantJoint = jointInput.value;
 
-    // CSV 파일로 저장
-    const csvData = `Time,Joint\n${currentTime},${importantJoint}`;
+    const selection = { startTime, endTime, importantJoint };
+    selections.push(selection);
 
-    // Blob 객체 생성
-    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const selectionElement = document.createElement('div');
+    selectionElement.textContent = `시작: ${startTime.toFixed(2)}초, 끝: ${endTime.toFixed(2)}초, 관절: ${importantJoint}`;
+    selectionsContainer.appendChild(selectionElement);
+});
+
+let selections = [];
+
+videoBar.addEventListener('click', (e) => {
+    const videoBarRect = videoBar.getBoundingClientRect();
+    const mouseX = e.clientX;
+    const videoDuration = videoPreview.duration;
+
+    const timePercentage = ((mouseX - videoBarRect.left) / videoBarRect.width) * 100;
+    const timeInSeconds = (timePercentage * videoDuration) / 100;
+
+    videoPreview.currentTime = timeInSeconds;
+});
+
+// 완료 버튼 클릭 이벤트 리스너
+completeBtn.addEventListener('click', () => {
+    // CSV 파일로 저장
+    const csvData = 'Start Time,End Time,Joint\n' + selections.map(selection => `${selection.startTime},${selection.endTime},${selection.importantJoint}`).join('\n');
+
+    // Blob 객체 생성 (UTF-8 BOM 추가)
+    const utf8BOM = '\uFEFF';
+    const blob = new Blob([utf8BOM + csvData], { type: 'text/csv;charset=utf-8;' });
 
     // 사용자 컴퓨터에 저장
     const a = document.createElement('a');
@@ -57,6 +101,29 @@ completeBtn.addEventListener('click', () => {
     // 완료되었습니다 알림
     alert('완료되었습니다.');
 });
+
+function onMouseMove(event) {
+    const videoBarRect = videoBar.getBoundingClientRect();
+    const mouseX = event.clientX;
+    const videoDuration = videoPreview.duration;
+
+    const timePercentage = ((mouseX - videoBarRect.left) / videoBarRect.width) * 100;
+    const timeInSeconds = (timePercentage * videoDuration) / 100;
+
+    if (timePercentage < 0) {
+        activeSelectionHandle.style.left = '0%';
+    } else if (timePercentage > 100) {
+        activeSelectionHandle.style.left = '100%';
+    } else {
+        activeSelectionHandle.style.left = timePercentage + '%';
+        activeSelectionHandle.setAttribute('data-time', timeInSeconds);
+    }
+}
+
+function onMouseUp() {
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+}
 
 videoPreview.addEventListener('timeupdate', () => {
     const progress = (videoPreview.currentTime / videoPreview.duration) * 100;
@@ -73,36 +140,3 @@ videoBarSelection.addEventListener('mousedown', () => {
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
 });
-
-function onMouseMove(e) {
-    const containerLeft = videoBarContainer.getBoundingClientRect().left;
-    const containerWidth = videoBarContainer.clientWidth;
-    let position = (e.clientX - containerLeft) / containerWidth;
-
-    position = Math.max(0, Math.min(1, position));
-
-    videoBarSelection.style.left = position * 100 + '%';
-    videoPreview.currentTime = position * videoPreview.duration;
-}
-
-function onMouseUp() {
-    document.removeEventListener('mousemove', onMouseMove);
-    document.removeEventListener('mouseup', onMouseUp);
-
-    const currentTime = videoPreview.currentTime;
-    const importantJoint = jointInput.value;
-
-    // CSV 파일로 저장
-    const csvData = `Time,Joint\n${currentTime},${importantJoint}`;
-
-    // Blob 객체 생성
-    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-
-    // 사용자 컴퓨터에 저장
-    const a = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    a.href = url;
-    a.download = 'joint-data.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-}

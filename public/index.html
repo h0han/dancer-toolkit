@@ -18,14 +18,15 @@
         <video id="video-preview" controls></video>
         <div id="video-bar-container">
             <div id="video-bar"></div>
-            <div id="video-bar-selection" draggable="true"></div>
+            <div id="video-bar-selection-start" draggable="true"></div>
+            <div id="video-bar-selection-end" draggable="true"></div>
         </div>
-        <!-- <input type="range" id="range-start"> -->
-        <!-- <input type="range" id="range-end"> -->
         <label for="joint-input">중요한 관절:</label>
         <input type="text" id="joint-input">
+        <button id="add-btn">추가</button>
         <button id="complete-btn">완료</button>
-    </div>
+        <div id="selections-container"></div>
+    </div>    
 
     <script src="scripts.js"></script>
 </body>
