@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>동영상 편집</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="page1">
+        <h1>동영상 녹화</h1>
+        <input type="file" id="video-input" accept="video/*">
+        <button id="upload-btn">Upload</button>
+    </div>
+
+    <div id="page2" style="display:none;">
+        <h1>편집</h1>
+        <video id="video-preview" controls></video>
+        <div id="video-bar-container">
+            <div id="video-bar"></div>
+            <div id="video-bar-selection" draggable="true"></div>
+        </div>
+        <!-- <input type="range" id="range-start"> -->
+        <!-- <input type="range" id="range-end"> -->
+        <label for="joint-input">중요한 관절:</label>
+        <input type="text" id="joint-input">
+        <button id="complete-btn">완료</button>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

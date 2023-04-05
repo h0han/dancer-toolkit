@@ -1,0 +1,27 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    text-align: center;
+}
+
+#video-bar-container {
+    position: relative;
+    height: 10px;
+    background-color: #ddd;
+}
+
+#video-bar {
+    position: absolute;
+    height: 100%;
+    background-color: #2196F3;
+}
+
+#video-bar-selection {
+    position: absolute;
+    width: 10px;
+    height: 100%;
+    background-color: #4CAF50;
+    cursor: pointer;
+}
