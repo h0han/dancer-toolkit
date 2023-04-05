@@ -103,6 +103,8 @@ completeBtn.addEventListener('click', () => {
 });
 
 function onMouseMove(event) {
+    event.preventDefault();
+
     const videoBarRect = videoBar.getBoundingClientRect();
     const mouseX = event.clientX;
     const videoDuration = videoPreview.duration;
@@ -110,24 +112,52 @@ function onMouseMove(event) {
     const timePercentage = ((mouseX - videoBarRect.left) / videoBarRect.width) * 100;
     const timeInSeconds = (timePercentage * videoDuration) / 100;
 
-    if (timePercentage < 0) {
-        activeSelectionHandle.style.left = '0%';
-    } else if (timePercentage > 100) {
-        activeSelectionHandle.style.left = '100%';
-    } else {
-        activeSelectionHandle.style.left = timePercentage + '%';
-        activeSelectionHandle.setAttribute('data-time', timeInSeconds);
+    if (activeSelectionHandle === videoBarSelectionStart) {
+        if (timePercentage < 0) {
+            activeSelectionHandle.style.left = '0%';
+        } else if (timePercentage > parseFloat(videoBarSelectionEnd.style.left)) {
+            activeSelectionHandle.style.left = videoBarSelectionEnd.style.left;
+        } else {
+            activeSelectionHandle.style.left = timePercentage + '%';
+            activeSelectionHandle.setAttribute('data-time', timeInSeconds.toFixed(2));
+        }
+    } else if (activeSelectionHandle === videoBarSelectionEnd) {
+        if (timePercentage > 100) {
+            activeSelectionHandle.style.left = '100%';
+        } else if (timePercentage < parseFloat(videoBarSelectionStart.style.left)) {
+            activeSelectionHandle.style.left = videoBarSelectionStart.style.left;
+        } else {
+            activeSelectionHandle.style.left = timePercentage + '%';
+            activeSelectionHandle.setAttribute('data-time', timeInSeconds.toFixed(2));
+        }
     }
+
+    const selectionStartPercentage = parseFloat(videoBarSelectionStart.style.left);
+    const selectionEndPercentage = parseFloat(videoBarSelectionEnd.style.left);
+    videoBarSelection.style.left = selectionStartPercentage + '%';
+    videoBarSelection.style.width = (selectionEndPercentage - selectionStartPercentage) + '%';
 }
 
-function onMouseUp() {
-    document.removeEventListener('mousemove', onMouseMove);
-    document.removeEventListener('mouseup', onMouseUp);
+function initializeVideoBar() {
+    const videoDuration = videoPreview.duration;
+    videoBarSelection.style.left = '0%';
+    videoBarSelection.style.width = '100%';
+    videoBarSelectionStart.style.left = '0%';
+    videoBarSelectionStart.setAttribute('data-time', 0);
+    videoBarSelectionEnd.style.left = '100%';
+    videoBarSelectionEnd.setAttribute('data-time', videoDuration);
 }
 
 videoPreview.addEventListener('timeupdate', () => {
     const progress = (videoPreview.currentTime / videoPreview.duration) * 100;
     videoBar.style.width = progress + '%';
+});
+
+videoBarSelectionStart.addEventListener('mousedown', onMouseDown);
+videoBarSelectionEnd.addEventListener('mousedown', onMouseDown);
+
+videoPreview.addEventListener('loadedmetadata', () => {
+    initializeVideoBar();
 });
 
 videoBarContainer.addEventListener('click', (e) => {
@@ -140,3 +170,5 @@ videoBarSelection.addEventListener('mousedown', () => {
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
 });
+
+

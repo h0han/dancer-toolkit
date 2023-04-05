@@ -12,17 +12,43 @@ h1 {
     background-color: #ddd;
 }
 
-#video-bar {
-    position: absolute;
-    height: 100%;
-    background-color: #2196F3;
+.video-bar {
+    position: relative;
+    height: 10px;
+    background-color: #ddd;
+    cursor: pointer;
+    margin-bottom: 24px;
 }
 
-#video-bar-selection-start,
-#video-bar-selection-end {
+.video-bar-selection {
     position: absolute;
-    width: 10px;
     height: 100%;
-    background-color: #4CAF50;
-    cursor: pointer;
+    background-color: rgba(76, 175, 80, 0.5);
 }
+
+.video-bar-selection-start,
+.video-bar-selection-end {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #4caf50;
+    top: -7px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    color: #ffffff;
+    z-index: 10;
+}
+
+.video-bar-selection-start::before {
+    content: 'S';
+}
+
+.video-bar-selection-end::before {
+    content: 'E';
+}
+
