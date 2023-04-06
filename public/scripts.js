@@ -3,19 +3,51 @@ const uploadBtn = document.getElementById('upload-btn');
 const page1 = document.getElementById('page1');
 const page2 = document.getElementById('page2');
 const videoPreview = document.getElementById('video-preview');
-const rangeStart = document.getElementById('range-start');
-const rangeEnd = document.getElementById('range-end');
 const jointInput = document.getElementById('joint-input');
 const completeBtn = document.getElementById('complete-btn');
-const videoBarContainer = document.getElementById('video-bar-container');
-const videoBar = document.querySelector('.video-bar');
-const videoBarSelection = document.getElementById('videoBarSelection');
-const videoBarSelectionStart = document.getElementById('video-bar-selection-start');
-const videoBarSelectionEnd = document.getElementById('video-bar-selection-end');
 const addBtn = document.getElementById('add-btn');
 const selectionsContainer = document.getElementById('selections-container');
+const startBtn = document.getElementById('start-btn');
+const endBtn = document.getElementById('end-btn');
 
-let activeSelectionHandle = null;
+let startTime = 0;
+let endTime = 0;
+
+startBtn.addEventListener('click', () => {
+    startTime = videoPreview.currentTime;
+});
+
+endBtn.addEventListener('click', () => {
+    endTime = videoPreview.currentTime;
+});
+
+addBtn.addEventListener('click', () => {
+    if (startTime >= endTime) {
+        alert('시작 시각이 종료 시각보다 빨라야 합니다.');
+        return;
+    }
+
+    const importantJoint = jointInput.value;
+
+    const selection = { startTime, endTime, importantJoint };
+    selections.push(selection);
+
+    const selectionElement = document.createElement('div');
+    selectionElement.textContent = `시작: ${startTime.toFixed(2)}초, 끝: ${endTime.toFixed(2)}초, 관절: ${importantJoint}`;
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '삭제';
+    deleteBtn.addEventListener('click', () => {
+        const index = selections.indexOf(selection);
+        if (index > -1) {
+            selections.splice(index, 1);
+        }
+        selectionsContainer.removeChild(selectionElement);
+    });
+
+    selectionElement.appendChild(deleteBtn);
+    selectionsContainer.appendChild(selectionElement);
+});
 
 uploadBtn.addEventListener('click', () => {
     if (videoInput.files.length === 0) {
@@ -42,45 +74,7 @@ uploadBtn.addEventListener('click', () => {
     });
 });
 
-videoBarSelectionStart.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    activeSelectionHandle = videoBarSelectionStart;
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-});
-
-videoBarSelectionEnd.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    activeSelectionHandle = videoBarSelectionEnd;
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-});
-
-addBtn.addEventListener('click', () => {
-    const startTime = parseFloat(videoBarSelectionStart.getAttribute('data-time'));
-    const endTime = parseFloat(videoBarSelectionEnd.getAttribute('data-time'));
-    const importantJoint = jointInput.value;
-
-    const selection = { startTime, endTime, importantJoint };
-    selections.push(selection);
-
-    const selectionElement = document.createElement('div');
-    selectionElement.textContent = `시작: ${startTime.toFixed(2)}초, 끝: ${endTime.toFixed(2)}초, 관절: ${importantJoint}`;
-    selectionsContainer.appendChild(selectionElement);
-});
-
 let selections = [];
-
-videoBar.addEventListener('click', (e) => {
-    const videoBarRect = videoBar.getBoundingClientRect();
-    const mouseX = e.clientX;
-    const videoDuration = videoPreview.duration;
-
-    const timePercentage = ((mouseX - videoBarRect.left) / videoBarRect.width) * 100;
-    const timeInSeconds = (timePercentage * videoDuration) / 100;
-
-    videoPreview.currentTime = timeInSeconds;
-});
 
 // 완료 버튼 클릭 이벤트 리스너
 completeBtn.addEventListener('click', () => {
@@ -102,85 +96,3 @@ completeBtn.addEventListener('click', () => {
     // 완료되었습니다 알림
     alert('완료되었습니다.');
 });
-
-function onMouseMove(event) {
-    event.preventDefault();
-
-    const videoBarRect = videoBar.getBoundingClientRect();
-    const mouseX = event.clientX;
-    const videoDuration = videoPreview.duration;
-
-    const timePercentage = ((mouseX - videoBarRect.left) / videoBarRect.width) * 100;
-    const timeInSeconds = (timePercentage * videoDuration) / 100;
-
-    if (activeSelectionHandle === videoBarSelectionStart) {
-        if (timePercentage < 0) {
-            activeSelectionHandle.style.left = '0%';
-        } else if (timePercentage > parseFloat(videoBarSelectionEnd.style.left)) {
-            activeSelectionHandle.style.left = videoBarSelectionEnd.style.left;
-        } else {
-            activeSelectionHandle.style.left = timePercentage + '%';
-            activeSelectionHandle.dataset.time = timeInSeconds.toFixed(2);
-        }
-
-        const selectionStartPercentage = parseFloat(videoBarSelectionStart.style.left);
-        const selectionEndPercentage = parseFloat(videoBarSelectionEnd.style.left);
-        videoBarSelection.style.left = selectionStartPercentage + '%';
-        videoBarSelection.style.width = (selectionEndPercentage - selectionStartPercentage) + '%';
-    } else if (activeSelectionHandle === videoBarSelectionEnd) {
-        if (timePercentage > 100) {
-            activeSelectionHandle.style.left = '100%';
-        } else if (timePercentage < parseFloat(videoBarSelectionStart.style.left)) {
-            activeSelectionHandle.style.left = videoBarSelectionStart.style.left;
-        } else {
-            activeSelectionHandle.style.left = timePercentage + '%';
-            activeSelectionHandle.dataset.time = timeInSeconds.toFixed(2);
-        }
-
-        const selectionStartPercentage = parseFloat(videoBarSelectionStart.style.left);
-        const selectionEndPercentage = parseFloat(videoBarSelectionEnd.style.left);
-        videoBarSelection.style.left = selectionStartPercentage + '%';
-        videoBarSelection.style.width = (selectionEndPercentage - selectionStartPercentage) + '%';
-    }
-}
-
-
-videoBarSelectionStart.style.position = 'absolute';
-videoBarSelectionEnd.style.position = 'absolute';
-
-  
-
-function initializeVideoBar() {
-    const videoDuration = videoPreview.duration;
-    videoBarSelection.style.left = '0%';
-    videoBarSelection.style.width = '100%';
-    videoBarSelectionStart.style.left = '0%';
-    videoBarSelectionStart.setAttribute('data-time', 0);
-    videoBarSelectionEnd.style.left = '100%';
-    videoBarSelectionEnd.setAttribute('data-time', videoDuration);
-}
-
-videoPreview.addEventListener('timeupdate', () => {
-    const progress = (videoPreview.currentTime / videoPreview.duration) * 100;
-    videoBar.style.width = progress + '%';
-});
-
-videoBarSelectionStart.addEventListener('mousedown', onMouseDown);
-videoBarSelectionEnd.addEventListener('mousedown', onMouseDown);
-
-videoPreview.addEventListener('loadedmetadata', () => {
-    initializeVideoBar();
-});
-
-videoBarContainer.addEventListener('click', (e) => {
-    const containerWidth = videoBarContainer.clientWidth;
-    const position = e.offsetX / containerWidth;
-    videoPreview.currentTime = position * videoPreview.duration;
-});
-
-videoBarSelection.addEventListener('mousedown', () => {
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-});
-
-
