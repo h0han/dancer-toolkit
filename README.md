@@ -1,4 +1,4 @@
-# Developing code to track trajectories for a particular joint
+# Provides user toolkit for dancers
 ## Features implemented
 
 - Upload a Recorded Video
