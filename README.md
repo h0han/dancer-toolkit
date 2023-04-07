@@ -15,5 +15,3 @@ $ npm install
 ```
 $ node app.js
 ```
-
-## Demo
